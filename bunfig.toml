@@ -1,0 +1,5 @@
+[test]
+preload = [
+  "./tests/bun-test-preload-dom.ts",
+  "./tests/bun-test-preload-testing-library.ts",
+]

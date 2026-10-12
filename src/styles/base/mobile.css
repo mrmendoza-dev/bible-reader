@@ -1,0 +1,20 @@
+/* Mobile-specific scroll behavior */
+@media (max-width: 768px) {
+  /* Disable viewport scroll; delegates scrolling to app containers */
+  html,
+  body {
+    overflow: hidden;
+    height: 100%;
+  }
+
+  /* Ensure app root stretches full height for inner scroll containers */
+  #root {
+    height: 100%;
+  }
+
+  /* Allow the main application content area to scroll */
+  main {
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}

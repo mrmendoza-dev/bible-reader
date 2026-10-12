@@ -1,0 +1,334 @@
+/*
+ * The shared design-token layer: the `:root` palette, its `.dark` counterpart, and the
+ * `@theme inline` mapping that exposes them to Tailwind as `--color-*` utilities.
+ *
+ * Extracted in P4-T4. `apps/web` and `apps/desktop` carried this block byte-for-byte identically
+ * (219 lines each, verified with a diff before the move), so it is imported here rather than
+ * maintained twice — a token added to one target silently disagreeing with the other was the
+ * failure this prevents.
+ *
+ * Import it AFTER `@import "tailwindcss"`, so `@theme inline` reaches Tailwind, and after
+ * `@custom-variant dark (&:is(.dark *))`, which each target still declares itself.
+ *
+ * ## `apps/extension` — the fold-in, and what P0-T1 decided
+ *
+ * The extension kept a private `src/styles/tokens.css` for two independent reasons: its selectors
+ * had to be doubled as `:root, :host` / `.dark, :host(.dark)` for the shadow roots it injects into
+ * (inside a shadow tree `:root` matches nothing, yet custom properties still inherit *across* the
+ * boundary, so a `:root`-only block leaves the injected UI reading the host page's tokens), and the
+ * two token sets had genuinely forked rather than one being a subset of the other.
+ *
+ * extension-overhaul splits those apart, because they are not the same problem.
+ *
+ * The **selector** half is settled in this file, by P5-T1: every token rule below is written as
+ * `:root, :host` / `.dark, :host(.dark)`, so a shadow tree can import this layer directly instead of
+ * carrying a copy. See the comment above `:root` for why that costs the other two targets nothing.
+ * The **preset** half — which of the switchable base/accent palettes is active — cannot be expressed
+ * in a stylesheet a shadow host can match at all, so P5-T0 pushes the *resolved* values onto the host
+ * as inline custom properties on top of this layer.
+ *
+ * The fork is what P0-T1 settled, here:
+ *
+ *   - **Ported** — `--destructive-foreground`, `--success-foreground`, `--warning-foreground` and
+ *     the `--color-*` mirrors for the first two, plus `--font-heading`. These were never really
+ *     "the extension's": this repo's own primitives and app tier reference all of them, and none
+ *     of it resolved. See the comments at each.
+ *   - **Dropped as a synonym** — `--error` / `--error-foreground` (+ mirrors). `--destructive` is
+ *     the same role under this design system's name, and nothing in the extension used the `error`
+ *     spelling. Adding it would have made two names for one token, which is how a set forks in the
+ *     first place.
+ *   - **Dropped as a Tailwind override** — `--radius-2xl` / `-3xl` / `-4xl`. Tailwind v4 already
+ *     ships all three; the extension's `calc(var(--radius) * 1.8…)` merely nudged them, and
+ *     hoisting that here would silently resize every `rounded-2xl` and `rounded-3xl` in
+ *     `apps/web` for a ~2px gain in a surface that has not shipped yet.
+ *
+ * What this file still does not carry is the extension's *values* — it is `Inter`-based and built
+ * on a different neutral ramp. That is the point: the extension adopts this palette, not the other
+ * way round.
+ */
+
+/*
+ * ## The `:host` half of each selector — for shadow roots, harmless everywhere else
+ *
+ * Inside a shadow tree `:root` matches NOTHING: `:root` is defined as the document element, and a
+ * shadow tree's root is `:host`. Custom properties still inherit *across* the shadow boundary, so a
+ * `:root`-only token block leaves a shadow tree resolving `var(--background)` from whatever the host
+ * *page* happens to define — which is how the extension's injected UI used to pick up the styling of
+ * every site it was injected into. (`:host { all: initial }` does not help: the `all` shorthand
+ * excludes custom properties by spec.)
+ *
+ * In a document-level stylesheet `:host` matches nothing at all, so for `apps/web` and
+ * `apps/desktop` these two rules are exactly what they were before extension-overhaul P5-T1.
+ *
+ * This replaces what was going to be a build-time-generated shadow-safe *copy* of this file. A copy
+ * — generated or not — is a second place a token can be defined, and this file exists because there
+ * were two. Doubling the selector is the same fix with no generated artifact to keep in step.
+ *
+ * What deliberately does NOT get this treatment is `themes.css`: its 1,044 lines are keyed on
+ * `:root[data-base=…]` / `[data-accent=…]` attributes written onto the document element, which a
+ * shadow host cannot carry. The extension's content script gets the *resolved* values of the
+ * user's chosen preset pushed onto the shadow host as inline custom properties instead — see
+ * `apps/extension/src/providers/ContentThemePublisher.tsx`.
+ */
+:root,
+:host {
+  --font-sans-family: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --radius: 0.625rem;
+  --background: oklch(0.98 0.01 270);
+  --foreground: oklch(0.2 0.02 270);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.18 0.02 270);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.18 0.02 270);
+
+  --primary: oklch(0.65 0.21 320); /* slightly darker than accent-primary */
+  --primary-foreground: oklch(0.98 0.01 265);
+  --primary-light: oklch(0.88 0.08 260);
+  --primary-light-foreground: oklch(0.2 0.02 265);
+
+  --secondary: oklch(0.95 0.03 270);
+  --secondary-foreground: oklch(0.3 0.12 275);
+  --accent: oklch(0.93 0.04 285);
+  --accent-foreground: oklch(0.25 0.1 270);
+
+  --destructive: oklch(0.67 0.2175 25.27);
+  --success: oklch(0.72 0.17 145);
+  --warning: oklch(0.75 0.15 85);
+
+  /* The paired text colors for the three semantic surfaces above. Added in extension-overhaul
+     P0-T1, but they are not an extension import — `bg-destructive text-destructive-foreground` is
+     written 15 times across the app tier and `bg-success text-success-foreground` twice, and none
+     of it resolved: the mapping did not exist, so the text kept whatever `--foreground` it
+     inherited (near-black, on a saturated red). Declared only here and not in `.dark`, because all
+     three surfaces hold the same value in both modes.
+
+     White on destructive is the shadcn convention and how every call site uses it (buttons and
+     badges, i.e. large or bold text). Success and warning are light enough that white would drop
+     under 3:1, so they take a dark foreground — which is also what `--info` / `--info-foreground`
+     below already do. */
+  --destructive-foreground: oklch(0.98 0.01 25);
+  --success-foreground: oklch(0.22 0.05 145);
+  --warning-foreground: oklch(0.25 0.05 85);
+
+  /* The up/down pair for prices, deltas and sparklines. `@theme` below mapped `--color-positive`
+     and `--color-negative` to these for a long time while nothing defined them, so `text-positive`
+     compiled and rendered `inherit` (ai-assistant-widgets v1 audit, M9). Green/red rather than
+     success/destructive because a falling price is not an error and a rising one is not a
+     success — the pair needs its own hue that reads at 12px on a muted card. Foregrounds are for
+     the tinted-pill use (`bg-positive/12 text-positive`); the plain colour is the text. */
+  --positive: oklch(0.62 0.17 150);
+  --positive-foreground: oklch(0.2 0.05 150);
+  --negative: oklch(0.62 0.2 25);
+  --negative-foreground: oklch(0.98 0.01 25);
+
+  --muted: oklch(0.96 0.02 270);
+  --muted-foreground: oklch(0.55 0.05 270);
+
+  --border: oklch(0.84 0.03 270 / 40%);
+  --input: oklch(0.85 0.04 270 / 25%);
+  --ring: oklch(0.6 0.12 275 / 50%);
+
+  --accent-primary: oklch(0.7 0.22 320);
+
+  --badge: oklch(93.2% 0.032 255.585);
+  --badge-foreground: oklch(42.4% 0.199 265.638);
+
+  --neutral-foreground: oklch(0.785 0.115 274.713);
+
+  --info: oklch(0.7 0.15 255);
+  --info-foreground: oklch(0.2 0.02 255);
+
+  --chart-1: oklch(0.65 0.2 275);
+  --chart-2: oklch(0.7 0.18 200);
+  --chart-3: oklch(0.75 0.2 100);
+  --chart-4: oklch(0.68 0.22 320);
+  --chart-5: oklch(0.72 0.18 40);
+
+  --html: oklch(0.55 0.192 37.136);
+  --css: oklch(0.5 0.139 245.433);
+  --javascript: oklch(0.75 0.156 100.659);
+  --tailwindcss: oklch(0.648 0.155 233.252);
+  --sidebar: hsl(0 0% 98%);
+  --sidebar-foreground: hsl(240 5.3% 26.1%);
+  --sidebar-primary: hsl(240 5.9% 10%);
+  --sidebar-primary-foreground: hsl(0 0% 98%);
+  --sidebar-accent: hsl(240 4.8% 95.9%);
+  --sidebar-accent-foreground: hsl(240 5.9% 10%);
+  --sidebar-border: hsl(220 13% 91%);
+  --sidebar-ring: hsl(217.2 91.2% 59.8%);
+}
+
+/* `:host(.dark)` is the shadow-tree spelling of the same thing — the class goes on the shadow HOST,
+   so the dark palette resolves at the top of the shadow tree and inherits down. See above. */
+.dark,
+:host(.dark) {
+  --background: oklch(0.12 0.025 270);
+  --foreground: oklch(0.94 0.025 270);
+
+  --card: oklch(0.16 0.025 270);
+  --card-foreground: oklch(0.94 0.025 270);
+
+  --popover: oklch(0.16 0.025 270);
+  --popover-foreground: oklch(0.94 0.025 270);
+
+  --primary: oklch(0.45 0.189 297.222);
+  --primary-foreground: oklch(0.96 0.02 260);
+
+  --primary-light: oklch(0.88 0.08 270);
+  --primary-light-foreground: oklch(0.16 0.02 250);
+
+  --secondary: oklch(0.24 0.06 265); /* tiny hue bump */
+  --secondary-foreground: oklch(0.94 0.025 270);
+
+  --muted: oklch(0.22 0.035 270);
+  --muted-foreground: oklch(0.5544 0.045 257.42);
+
+  --accent: oklch(0.22 0.06 275);
+  --accent-foreground: oklch(0.94 0.025 270);
+
+  --destructive: oklch(0.67 0.2175 25.27);
+  --success: oklch(0.72 0.17 145);
+  --warning: oklch(0.75 0.15 85);
+  /* Lighter than the light-mode pair so the same 12px delta reads on a dark muted card. */
+  --positive: oklch(0.76 0.17 150);
+  --positive-foreground: oklch(0.2 0.05 150);
+  --negative: oklch(0.72 0.19 25);
+  --negative-foreground: oklch(0.98 0.01 25);
+
+  --border: oklch(0.26 0.045 270 / 50%);
+  --input: oklch(0.26 0.045 270 / 45%);
+  --ring: oklch(0.5 0.4 270);
+
+  --chart-1: oklch(0.45 0.2 270);
+  --chart-2: oklch(0.6 0.15 160);
+  --chart-3: oklch(0.7 0.18 70);
+  --chart-4: oklch(0.55 0.22 300);
+  --chart-5: oklch(0.6 0.18 20);
+
+  --sidebar: oklch(0.14 0.025 270);
+  --sidebar-foreground: oklch(0.94 0.025 270);
+  --sidebar-primary: oklch(0.45 0.2 270);
+  --sidebar-primary-foreground: oklch(0.94 0.025 270);
+  --sidebar-accent: oklch(0.22 0.06 270);
+  --sidebar-accent-foreground: oklch(0.94 0.025 270);
+  --sidebar-border: oklch(0.26 0.045 270 / 50%);
+  --sidebar-ring: oklch(0.5 0.05 270);
+
+  --accent-primary: oklch(0.65 0.2 300);
+
+  --badge: oklch(0.18 0.06 265);
+  --badge-foreground: oklch(0.7 0.3 265);
+
+  --info: oklch(0.424 0.199 265.638);
+  --info-foreground: oklch(0.707 0.165 254.624);
+
+  --html: oklch(0.62 0.192 37.136);
+  --css: oklch(0.551 0.139 245.433);
+  --javascript: oklch(0.884 0.156 100.659);
+  --tailwindcss: oklch(0.748 0.155 233.252);
+
+  /* Hacker colors for morse code app - brighter in dark mode */
+  --color-hacker: var(--hacker);
+  --color-hacker-primary: var(--hacker-primary);
+  --color-hacker-foreground: var(--hacker-foreground);
+  --color-hacker-accent: var(--hacker-accent);
+}
+
+/* CSS custom properties mapping for Tailwind compatibility */
+@theme inline {
+  --font-sans: var(--font-sans-family);
+  /* `font-heading` is used by six ui-base primitives (card, dialog, sheet, drawer, alert-dialog,
+     empty) and across the lab surfaces, and until P0-T1 it mapped to nothing — the class was inert
+     and those titles silently rendered in the inherited sans. Aliasing it to `--font-sans` keeps
+     that rendering identical while making the utility real, and leaves a seam for a distinct
+     heading face later. */
+  --font-heading: var(--font-sans);
+  --radius-sm: calc(var(--radius) - 6px);
+  --radius-md: calc(var(--radius) - 3px);
+  --radius-lg: calc(var(--radius) - 1px);
+  --radius-xl: var(--radius);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --color-accent-primary: var(--accent-primary);
+  --color-accent-secondary: var(--accent-secondary);
+  --color-accent-tertiary: var(--accent-tertiary);
+  --color-positive: var(--positive);
+  --color-positive-foreground: var(--positive-foreground);
+  --color-negative: var(--negative);
+  --color-negative-foreground: var(--negative-foreground);
+  --color-neutral: var(--neutral);
+  --color-neutral-foreground: var(--neutral-foreground);
+  --color-badge: var(--badge);
+  --color-badge-foreground: var(--badge-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-highlight: var(--highlight);
+  --color-spotlight-primary: var(--spotlight-primary);
+  --color-golden: var(--golden);
+  --color-golden-foreground: var(--golden-foreground);
+  --color-golden-accent: var(--golden-accent);
+
+  /* Hacker colors for morse code app */
+  --color-hacker: var(--hacker);
+  --color-hacker-primary: var(--hacker-primary);
+  --color-hacker-foreground: var(--hacker-foreground);
+  --color-hacker-accent: var(--hacker-accent);
+
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--accordion-panel-height);
+    }
+  }
+
+  @keyframes accordion-up {
+    from {
+      height: var(--accordion-panel-height);
+    }
+    to {
+      height: 0;
+    }
+  }
+}

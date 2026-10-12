@@ -1,0 +1,20 @@
+/* Bible App Theme Variables */
+/* Extends base theme variables from src/styles/index.css */
+
+:root {
+  --golden: oklch(68.1% 0.162 75.834);
+  --golden-foreground: oklch(96.1% 0.006 75.834);
+  --golden-accent: oklch(82.6% 0.154 75.834);
+}
+
+.dark {
+  --golden: oklch(78.1% 0.18 75.834);
+  --golden-foreground: oklch(20% 0.02 75.834);
+  --golden-accent: oklch(85% 0.16 75.834);
+}
+
+@theme inline {
+  --color-golden: var(--golden);
+  --color-golden-foreground: var(--golden-foreground);
+  --color-golden-accent: var(--golden-accent);
+}
