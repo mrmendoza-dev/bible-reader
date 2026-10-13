@@ -20,7 +20,9 @@ describe("standalone translation loader", () => {
     ]);
     expect(first).toBe(second);
     expect(fetcher).toHaveBeenCalledOnce();
-    expect(fetcher).toHaveBeenCalledWith("/translations/web/genesis.json");
+    expect(fetcher).toHaveBeenCalledWith(
+      "/bible/data/translations/web/genesis.json",
+    );
     await bibleService.getBook("genesis", "kjv");
     expect(fetcher).toHaveBeenCalledTimes(2);
   });
@@ -64,7 +66,9 @@ describe("standalone translation loader", () => {
     expect(await bibleService.getChaptersForBook("tobit", "swe1917")).toEqual([
       { number: 1, title: "Chapter 1" },
     ]);
-    expect(fetcher).toHaveBeenCalledWith("/translations/swe1917/tobit.json");
+    expect(fetcher).toHaveBeenCalledWith(
+      "/bible/data/translations/swe1917/tobit.json",
+    );
     const results = await bibleService.searchBible("Text", "tobit", "all");
     expect(results.map((entry) => entry.translation)).toEqual(["swe1917"]);
   });

@@ -12,5 +12,5 @@ and expected behavior are clear.
 
 Do not add translation files from an unverified source or include private user
 data in an issue or pull request. Translation text has separate rights from the
-application code; see `THIRD_PARTY_NOTICES.md` and the README's Production data
-section.
+application code; see `THIRD_PARTY_NOTICES.md` and the README's Data,
+attribution, and license section.

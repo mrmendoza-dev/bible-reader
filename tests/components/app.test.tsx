@@ -230,7 +230,9 @@ it("reads and saves a verse through the real app without an account or backend",
   await screen.findByText("Standalone fixture text.");
   expect(screen.queryByText("Explain Verse")).toBeNull();
   for (const [url] of vi.mocked(fetch).mock.calls)
-    expect(String(url)).toMatch(/^\/translations\/(web|asv|ylt|kjv)\//);
+    expect(String(url)).toMatch(
+      /^\/bible\/data\/translations\/(web|asv|ylt|kjv)\//,
+    );
 });
 
 it("returns to home when the header brand is clicked", async () => {
@@ -398,7 +400,9 @@ it("opens a search result in its source translation through the reader route", a
   expect(
     JSON.parse(localStorage.getItem("bible:translation") ?? "null").value,
   ).toBe("swe1917");
-  expect(fetch).toHaveBeenCalledWith("/translations/swe1917/tobit.json");
+  expect(fetch).toHaveBeenCalledWith(
+    "/bible/data/translations/swe1917/tobit.json",
+  );
   expect(
     vi
       .mocked(fetch)

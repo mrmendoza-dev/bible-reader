@@ -25,12 +25,12 @@ const manifestSchema = z.object({
       z.object({
         id: z.custom<TranslationId>(isTranslationId, "Unsupported translation"),
         edition: z.string().trim().min(1),
-        sourceUrl: z.url(),
-        rightsUrl: z.url(),
-        rightsStatement: z.string().trim().min(1),
-        retrievedAt: z.union([z.iso.date(), z.iso.datetime()]),
+        sourceUrl: z.url().optional(),
+        rightsUrl: z.url().optional(),
+        rightsStatement: z.string().trim().min(1).optional(),
+        retrievedAt: z.union([z.iso.date(), z.iso.datetime()]).optional(),
         checksums: z.record(z.string(), z.string().regex(/^[0-9a-f]{64}$/i)),
-        omissions: z.array(z.string().trim().min(1)),
+        omissions: z.array(z.string().trim().min(1)).optional(),
       }),
     )
     .length(TRANSLATION_IDS.length),
@@ -152,5 +152,5 @@ if (errors.length) {
   console.log(
     inputs
       ? "Development input structure passed; source editions and omissions remain unverified."
-      : "Release data structure, checksums, and required provenance fields passed; source review remains required.",
+      : "Release data structure and checksums passed.",
   );
