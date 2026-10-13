@@ -1,6 +1,10 @@
+import "fake-indexeddb/auto";
 import "@testing-library/jest-dom";
 import { cleanup } from "@testing-library/react";
 import { afterEach, vi } from "vitest";
+
+// jsdom lacks the Web Animations API used by Base UI scroll areas.
+Element.prototype.getAnimations = () => [];
 
 afterEach(() => {
   cleanup();

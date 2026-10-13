@@ -6,23 +6,21 @@
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
     "strict": true,
-
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
     "types": ["bun", "vite/client"],
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
     "skipLibCheck": true,
-
     "paths": {
-      "@/*": ["./src/*"],
-      "@server/*": ["./server/*"],
-      "@apps/production/bible-app/*": ["./bible-app/*"]
+      "@/*": ["./src/*"]
     },
-
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src", "server", "tests", "vite.config.ts", "drizzle.config.ts"],
-  "exclude": ["node_modules", "dist", "bible-app", "tests/bible-app"]
+  "include": ["src", "tests", "scripts", "vite.config.ts"],
+  "exclude": ["node_modules", "dist"]
 }

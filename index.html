@@ -9,7 +9,11 @@
     <script>
       (() => {
         try {
-          const stored = localStorage.getItem("bible-reader-theme") || "dark";
+          const value = localStorage.getItem("bible-reader-theme");
+          const stored =
+            value === "dark" || value === "light" || value === "system"
+              ? value
+              : "dark";
           const systemDark = window.matchMedia(
             "(prefers-color-scheme: dark)",
           ).matches;
@@ -17,27 +21,17 @@
             stored === "system" ? (systemDark ? "dark" : "light") : stored;
           document.documentElement.classList.add(theme);
         } catch {
-          /* localStorage unavailable — fall back to CSS default */
+          document.documentElement.classList.add("dark");
         }
       })();
     </script>
 
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta http-equiv="content-language" content="en-us" />
     <title>Bible Reader</title>
 
     <meta
       name="description"
-      content="Read, search, bookmark, and study the Bible in a fast, offline-friendly web app."
+      content="Read, search, save, and organize Scripture in your browser."
     />
-    <meta
-      name="keywords"
-      content="Bible, scripture, Bible reader, study, bookmarks, verses"
-    />
-    <meta name="author" content="Bible Reader" />
-    <meta name="robots" content="index, follow" />
-    <!-- <meta name="google-site-verification" content="your-verification-code" /> -->
-
     <link rel="icon" href="/favicon/favicon.ico" sizes="any" />
     <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png" />
@@ -46,7 +40,7 @@
     <meta property="og:title" content="Bible Reader" />
     <meta
       property="og:description"
-      content="Read, search, bookmark, and study the Bible in a fast, offline-friendly web app."
+      content="Read, search, save, and organize Scripture in your browser."
     />
     <meta property="og:image" content="/images/logo.png" />
     <meta property="og:type" content="website" />
@@ -54,22 +48,7 @@
 
     <meta name="theme-color" content="#000000" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="#000000" />
-
-    <!-- <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Title" />
-    <meta name="twitter:description" content="description for SEO" />
-    <meta name="twitter:image" content="url to image" /> -->
-
-    <link rel="preconnect" href="https://fonts.gstatic.com" />
-    <!-- <link
-      rel="preload"
-      href="/fonts/your-font.woff2"
-      as="font"
-      type="font/woff2"
-      crossorigin
-    /> -->
-
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   </head>
   <body>
     <div id="root"></div>

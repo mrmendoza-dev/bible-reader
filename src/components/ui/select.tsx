@@ -5,6 +5,13 @@ import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import type * as React from "react";
 import { cn } from "@/lib/utils";
 
+/**
+ * Base UI Select root. When option `value` differs from the display label, pass
+ * `items` so `<SelectValue />` shows the label in the trigger (not the raw value).
+ *
+ * @example
+ * <Select value={freq} items={[{ value: "daily", label: "Daily" }]} onValueChange={...}>
+ */
 const Select = SelectPrimitive.Root;
 
 function SelectGroup({ className, ...props }: SelectPrimitive.Group.Props) {

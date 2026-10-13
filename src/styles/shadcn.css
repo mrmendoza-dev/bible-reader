@@ -1,0 +1,34 @@
+/* Scroll area */
+[data-slot="scroll-area-viewport"] {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+[data-slot="scroll-area-viewport"]::-webkit-scrollbar {
+  display: none;
+}
+
+/* Toasts */
+[data-sonner-toaster].app-toaster [data-sonner-toast] [data-icon] {
+  color: var(--primary);
+}
+
+[data-sonner-toaster].app-toaster [data-sonner-toast] [data-description] {
+  color: var(--muted-foreground);
+}
+
+[data-sonner-toaster].app-toaster [data-sonner-toast] [data-button] {
+  color: var(--primary-foreground);
+  background: var(--primary);
+  border-radius: var(--radius);
+  margin-left: auto;
+}
+
+[data-sonner-toaster].app-toaster [data-sonner-toast] [data-cancel] {
+  color: var(--muted-foreground);
+  background: var(--muted);
+}
+
+[data-sonner-toaster].app-toaster [data-type="error"] [data-icon] {
+  color: var(--destructive);
+}

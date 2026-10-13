@@ -12,6 +12,7 @@ coverage
 
 # Environment & secrets
 .env
+.env.*
 *.local
 
 # Logs
@@ -42,17 +43,8 @@ bun-debug.log*
 # Local scratch
 .local/
 
-# SQLite (Drizzle dev DB — path overridable via DATABASE_PATH)
-data/
-*.db
+# Translation files that must stay out of the repository
+/not_allowed/
 
-# Python (optional scripts)
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-
-# Other package managers at repo root (this repo uses bun.lock)
-/package-lock.json
-/yarn.lock
-/pnpm-lock.yaml
+# Unverified translation copies for local development
+/translations/

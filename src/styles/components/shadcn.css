@@ -1,6 +1,0 @@
-/* Shadcn overrides */
-
-/* Sidebar */
-[data-slot="sidebar-container"] {
-  position: static;
-}

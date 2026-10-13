@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
-type Theme = "dark" | "light" | "system";
+export type Theme = "dark" | "light" | "system";
 
 type ThemeProviderProps = {
   children: React.ReactNode;
@@ -22,9 +22,16 @@ export function ThemeProvider({
   defaultTheme = "dark",
   storageKey = "bible-reader-theme",
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme,
-  );
+  const [theme, setTheme] = useState<Theme>(() => {
+    try {
+      const stored = localStorage.getItem(storageKey);
+      return stored === "dark" || stored === "light" || stored === "system"
+        ? stored
+        : defaultTheme;
+    } catch {
+      return defaultTheme;
+    }
+  });
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -55,8 +62,12 @@ export function ThemeProvider({
   const value = {
     theme,
     setTheme: (next: Theme) => {
-      localStorage.setItem(storageKey, next);
       setTheme(next);
+      try {
+        localStorage.setItem(storageKey, next);
+      } catch (error) {
+        console.warn("Could not persist theme preference", error);
+      }
     },
   };
 
