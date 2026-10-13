@@ -8,10 +8,4 @@ const updateSW = registerSW({
       updateSW(true);
     }
   },
-  onOfflineReady() {
-    console.log(
-      "App shell cached; full translation caching is not enabled yet.",
-    );
-    // You can show a notification here
-  },
 });

@@ -69,12 +69,18 @@ and the app shows books with text for the selected translation.
 - Browse recently saved verses from Home and manage saved collections in Saved.
 - Choose reading fonts and themes, then export or restore a backup of saved
   verses, lists, and bookmarks.
+- Install the app as a PWA and keep the app shell and previously opened
+  translation books available offline.
 
 ## Storage
 
 Saved verses, lists, and bookmarks live in IndexedDB in the current browser.
 Reading preferences, such as the selected translation, location, theme, and
 fonts, use localStorage. Data does not sync between browsers or devices.
+
+The installable PWA caches the app shell and translation books as you open them.
+Books you have not opened yet need an internet connection the first time. Browser
+storage can be cleared or evicted, which removes cached books too.
 
 Use the Backup dialog to export collections before clearing browser data or
 changing devices. Restores are validated before replacing collections. Browser

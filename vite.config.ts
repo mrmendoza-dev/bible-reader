@@ -32,7 +32,24 @@ export default defineConfig({
           },
         ],
       },
-      workbox: { globPatterns: ["**/*.{js,css,html,ico,png,woff2}"] },
+      workbox: {
+        globPatterns: ["**/*.{js,css,html,ico,png,woff2}"],
+        runtimeCaching: [
+          {
+            urlPattern: /\/bible\/data\/translations\/[^/]+\/[^/]+\.json$/,
+            handler: "StaleWhileRevalidate",
+            options: {
+              cacheName: "bible-translations",
+              expiration: {
+                maxEntries: 1500,
+                maxAgeSeconds: 60 * 60 * 24 * 365,
+                purgeOnQuotaError: true,
+              },
+              cacheableResponse: { statuses: [200] },
+            },
+          },
+        ],
+      },
     }),
   ],
   test: {
